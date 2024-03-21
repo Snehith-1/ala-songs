@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALA SONGS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        h1 {
+            text-align: center;
+            color: #1DB954;
+            margin-top: 20px;
+        }
+
+
+        #searchContainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+
+        #searchInput {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+
+        #searchButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+
+        #results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            overflow: hidden;
+            width: 300px;
+            transition: box-shadow 0.3s ease;
+        }
+
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+
+        .card img {
+            width: 100%;
+            height: auto;
+            border-bottom: 1px solid #ccc;
+        }
+
+
+        .card-content {
+            padding: 10px;
+        }
+
+
+        .card-content h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+
+        .card-content p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ALA SONGS-Movie-based Song Search</h1>
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Search for movies">
+        <button id="searchButton" onclick="searchSongs()">Search</button>
+    </div>
+    <div id="results"></div>
+
+
+    <script>
+        function getAccessToken() {
+            var clientID = '5a87f9b27fe64b55bf36fd4eb32ce335'; // Replace with your actual client ID
+            var clientSecret = '413aadfe51dd486cbf4b1340c2fe4563'; // Replace with your actual client secret
+
+
+            var credentials = btoa(clientID + ':' + clientSecret);
+
+
+fetch('https://accounts.spotify.com/api/token', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + credentials,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'grant_type=client_credentials'
+            })
+            .then(response => response.json())
+            .then(data => {
+                var accessToken = data.access_token;
+                localStorage.setItem('spotifyAccessToken', accessToken);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
+        function searchSongs() {
+            var searchQuery = document.getElementById('searchInput').value;
+            var accessToken = localStorage.getItem('spotifyAccessToken');
+
+
+fetch('https://api.spotify.com/v1/search?q=' + searchQuery + '&type=track', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data.tracks.items);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
+        function displayResults(tracks) {
+            var resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+
+            tracks.forEach(function(track) {
+                var trackDiv = document.createElement('div');
+                trackDiv.classList.add('card');
+var imageUrl = track.album.images.length > 0 ? track.album.images[0].url : 'https://via.placeholder.com/300';
+                trackDiv.innerHTML = `
+<img src="${imageUrl}" alt="${track.album.name}">
+                    <div class="card-content">
+
+
+${track.name}</h3>
+
+
+                        <p><strong>Artist:</strong> ${track.artists[0].name}</p>
+
+
+Album: ${track.album.name}</p>
+                        <audio controls>
+                            <source src="${track.preview_url}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                `;
+                resultsDiv.appendChild(trackDiv);
+            });
+        }
+
+
+        // On page load, get the access token
+        window.onload = function() {
+            getAccessToken();
+        };
+    </script>
+</body>
+</html>
